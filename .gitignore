@@ -2,3 +2,4 @@
 /.venv
 *.session
 *.xlsx
+*.session-journal

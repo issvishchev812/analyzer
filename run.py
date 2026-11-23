@@ -1,0 +1,30 @@
+import asyncio
+
+from tg_collector import collect_telegram
+
+
+async def main():
+    print("Запускаем Telegram-коллектор...", flush=True)
+
+    try:
+        posts = await collect_telegram()
+
+        print(f"\nСбор завершён. Получено новостей: {len(posts)}")
+
+        for post in posts:
+            print("\n" + "=" * 50)
+            print(f"Источник: {post['source']}")
+            print(f"Категория: {post['category']}")
+            print(f"Краткое содержание: {post['summary']}")
+            print(f"Ссылка: {post['url']}")
+            print(f"Текст: {post['text'][:300]}")
+
+    except KeyboardInterrupt:
+        print("\nОстановка коллектора...")
+
+    except Exception as e:
+        print(f"Критическая ошибка: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
