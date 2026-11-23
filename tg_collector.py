@@ -5,7 +5,7 @@ import random
 from telethon import TelegramClient
 from telethon.errors import FloodWaitError
 
-from config import API_ID, API_HASH, KEYWORDS, TABLE_NAME, FIRST_RUN_LIMIT
+from config import API_ID, API_HASH, TABLE_NAME
 from state import (
     load_state,
     save_state,
@@ -72,13 +72,11 @@ async def collect_telegram():
 
             print(f"Последний ID: {last_id}", flush=True)
 
-            is_first_run = str(chat) not in state
-
             async for message in client.iter_messages(
                     entity,
                     min_id=last_id,
                     reverse=True,
-                    limit=FIRST_RUN_LIMIT if is_first_run else None,
+                    limit=15,
                     wait_time=2
             ):
 
@@ -88,14 +86,6 @@ async def collect_telegram():
                     continue
 
                 text = message.message.lower()
-
-                if not any(
-                    keyword.lower() in text
-                    for keyword in KEYWORDS
-                ):
-                    state[str(chat)] = message.id
-                    save_state(state)
-                    continue
 
                 text_hash = get_text_hash(text)
 
@@ -129,13 +119,9 @@ async def collect_telegram():
                     break
 
                 if analysis["relevant"]:
+                    username = str(chat).rstrip("/").split("/")[-1]
 
-                    username = getattr(entity, "username", None)
-
-                    url = (
-                        f"https://t.me/{username}/{message.id}"
-                        if username else None
-                    )
+                    url = f"https://t.me/{username}/{message.id}"
 
                     posts.append({
                         "source": chat,
@@ -153,10 +139,17 @@ async def collect_telegram():
                         "reason": analysis.get("reason", "")
                     })
 
-                mark_as_processed(processed_key, processed)
+                print(f"4. Сохраняем обработанное сообщение ID={message.id}", flush=True)
+
+                mark_as_processed(processed_key)
+                processed.add(processed_key)
+
+                print(f"5. Обновляем state.json, ID={message.id}", flush=True)
 
                 state[str(chat)] = message.id
                 save_state(state)
+
+                print(f"6. Сообщение ID={message.id} полностью обработано", flush=True)
 
             print(f"Чат обработан: {chat}", flush=True)
 
