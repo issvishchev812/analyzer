@@ -1,7 +1,7 @@
 import asyncio
 
 from tg_collector import collect_telegram
-
+from telegram_sender import send_news
 
 async def main():
     print("Запускаем Telegram-коллектор...", flush=True)
@@ -12,12 +12,16 @@ async def main():
         print(f"\nСбор завершён. Получено новостей: {len(posts)}")
 
         for post in posts:
+
+            send_news(post)
+
             print("\n" + "=" * 50)
             print(f"Источник: {post['source']}")
-            print(f"Категория: {post['category']}")
             print(f"Краткое содержание: {post['summary']}")
             print(f"Ссылка: {post['url']}")
             print(f"Текст: {post['text'][:300]}")
+            print(f"Причина: {post['reason']}")
+
 
     except KeyboardInterrupt:
         print("\nОстановка коллектора...")

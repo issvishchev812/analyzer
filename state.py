@@ -1,9 +1,19 @@
 import json
+import os
 from pathlib import Path
 import hashlib
 
 STATE_FILE = Path(__file__).parent / "state.json"
 PROCESSED_FILE = Path(__file__).parent / "processed.json"
+
+
+def save_json(file_path, data):
+    temporary_file = file_path.with_suffix(f"{file_path.suffix}.tmp")
+
+    with open(temporary_file, "w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=4)
+
+    os.replace(temporary_file, file_path)
 
 
 def load_state():
@@ -15,8 +25,7 @@ def load_state():
 
 
 def save_state(state):
-    with open(STATE_FILE, "w", encoding="utf-8") as file:
-        json.dump(state, file, ensure_ascii=False, indent=4)
+    save_json(STATE_FILE, state)
 
 
 def get_text_hash(text):
@@ -33,8 +42,7 @@ def load_processed():
 
 
 def save_processed(processed):
-    with open(PROCESSED_FILE, "w", encoding="utf-8") as file:
-        json.dump(list(processed), file, ensure_ascii=False, indent=4)
+    save_json(PROCESSED_FILE, list(processed))
 
 
 def mark_as_processed(text_hash):
